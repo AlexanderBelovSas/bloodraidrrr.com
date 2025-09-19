@@ -16,19 +16,19 @@
             overflow: hidden;
         }
 
-        /* Blurred background image */
+        /* Blurred background */
         body::before {
             content: "";
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: url('car.png') center/cover no-repeat;
-            filter: blur(8px);             /* only this gets blurred */
-            transform: scale(1.05);        /* avoid edge cut-off */
+            filter: blur(8px);
+            transform: scale(1.05); /* avoid edge cutoff */
             z-index: -3;
         }
 
-        /* Animated color drift overlay */
+        /* Animated color drift */
         body::after {
             content: "";
             position: absolute;
@@ -40,7 +40,7 @@
             z-index: -2;
         }
 
-        /* Dark transparent overlay for readability */
+        /* Dark transparent overlay */
         .overlay {
             position: absolute;
             top: 0; left: 0;
@@ -55,12 +55,47 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Accessibility: disable motion if reduced-motion is on */
         @media (prefers-reduced-motion: reduce) {
-            body::after {
-                animation: none !important;
-            }
+            body::after { animation: none !important; }
+        }
+
+        h1, h2, h3 {
+            position: relative; /* keeps text above overlays */
+            z-index: 1;         /* ensures visibility */
+            text-align: center;
         }
 
         h1 {
             font-size: 48px;
+            margin: 0;
+        }
+        h2 {
+            font-size: 28px;
+            margin: 10px 0 0 0;
+            font-weight: normal;
+        }
+        h3 {
+            font-size: 22px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <h1>მოგესალმებით</h1>
+    <h2>წაიკითხე ქვემოთ</h2>
+    <h3 id="ip">შენი IP იტვირთება...</h3>
+
+    <script>
+        // IP fetch
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ip').innerText = "შენი IP: " + data.ip;
+            })
+            .catch(() => {
+                document.getElementById('ip').innerText = "IP ვერ ჩაიტვირთა.";
+            });
+    </script>
+</body>
+</html>
