@@ -1,326 +1,64 @@
 <!DOCTYPE html>
-<html lang="ka">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BLOODRAIDRRR — playful mode</title>
-  <style>
-    :root{
-      --accent: rgba(255,255,255,0.9);
-      --overlay: rgba(0,0,0,0.45);
-    }
-
-    /* Base page */
-    html,body{
-      height:100%;
-      margin:0;
-      font-family: system-ui,Segoe UI,Roboto, "Noto Sans", "Fira Sans", sans-serif;
-      color:var(--accent);
-      background-image:url('car.png');
-      background-size:cover;
-      background-position:center;
-      background-repeat:no-repeat;
-    }
-    .page{
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      position:relative;
-    }
-    .dim{
-      position:absolute; inset:0; background:var(--overlay); z-index:0;
-    }
-    h1{ font-size:48px; margin:0; z-index:1; text-shadow:2px 2px 10px black; }
-    h2{ font-size:24px; margin:8px 0 0 0; z-index:1; font-weight:400; }
-    #ip { margin-top:14px; z-index:1; font-size:18px; }
-
-    /* Controls */
-    .controls{
-      z-index:1;
-      margin-top:18px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-    button, .linklike {
-      background:transparent;
-      color:var(--accent);
-      border:2px solid rgba(255,255,255,0.2);
-      padding:8px 14px;
-      border-radius:10px;
-      cursor:pointer;
-      backdrop-filter: blur(2px);
-    }
-    button.primary{
-      border-color: rgba(255,255,255,0.6);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-    }
-
-    /* Troll banner (slides from top) */
-    .troll-banner{
-      position:fixed;
-      left:50%;
-      transform:translate(-50%, -120%);
-      top:0;
-      z-index:999;
-      background:linear-gradient(90deg, rgba(255,0,110,0.95), rgba(0,160,255,0.95));
-      color:white;
-      padding:12px 22px;
-      border-radius:0 0 12px 12px;
-      font-weight:700;
-      letter-spacing:0.5px;
-      box-shadow:0 8px 30px rgba(0,0,0,0.5);
-      transition: transform 450ms cubic-bezier(.2,.9,.2,1);
-      pointer-events:none;
-    }
-    .troll-banner.show{ transform:translate(-50%, 0); pointer-events:auto; }
-
-    /* Gentle flashing effect (low frequency) */
-    @keyframes gentle-pulse {
-      0% { filter: hue-rotate(0deg) saturate(1) brightness(1); }
-      50% { filter: hue-rotate(15deg) saturate(1.07) brightness(1.02); }
-      100% { filter: hue-rotate(0deg) saturate(1) brightness(1); }
-    }
-    .flashing {
-      animation: gentle-pulse 2.6s ease-in-out infinite;
-    }
-
-    /* Invert briefly (used sparingly) */
-    .invert-temp{
-      transition: filter 220ms ease;
-      filter: invert(1) hue-rotate(180deg);
-    }
-
-    /* confetti canvas covers screen */
-    #confetti {
-      position:fixed; inset:0; pointer-events:none; z-index:900;
-    }
-
-    /* hidden by default */
-    .hidden{ display:none; }
-
-    /* accessibility: respects reduced motion */
-    @media (prefers-reduced-motion: reduce) {
-      .flashing, .troll-banner, .invert-temp { animation: none !important; transition: none !important; }
-    }
-  </style>
+    <title>BLOODRAIDRRR</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('car.png'); /* replace with your image */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            text-shadow: 2px 2px 10px black;
+            position: relative;
+        }
+        h1 {
+            font-size: 48px;
+            margin: 0;
+        }
+        h2 {
+            font-size: 28px;
+            margin: 10px 0 0 0;
+            font-weight: normal;
+        }
+        h3 {
+            font-size: 22px;
+            margin-top: 15px;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: -1;
+        }
+    </style>
 </head>
 <body>
-  <div class="page" id="pageRoot">
-    <div class="dim" aria-hidden="true"></div>
-
+    <div class="overlay"></div>
     <h1>მოგესალმებით</h1>
-    <h2>წაიკითხე ქვემოთ — და თამაშში შემოხვალ თუ მოინდომებ</h2>
+    <h2>წაიკითხე ქვემოთ</h2>
     <h3 id="ip">შენი IP იტვირთება...</h3>
 
-    <div class="controls" id="controls">
-      <button id="enableTroll" class="primary" aria-pressed="false">Enable playful mode (consent)</button>
-      <button id="stopTroll" class="hidden">Stop prank</button>
-      <button id="miniPrank" class="hidden">Quick prank</button>
-    </div>
-  </div>
-
-  <!-- troll banner -->
-  <div class="troll-banner" id="banner" role="status" aria-live="polite">Gotcha! 😈</div>
-
-  <!-- confetti canvas -->
-  <canvas id="confetti" class="hidden" aria-hidden="true"></canvas>
-
-  <script>
-    // Basic IP display (no sending)
-    (function loadIP(){
-      const ipEl = document.getElementById('ip');
-      fetch('https://api.ipify.org?format=json')
-        .then(r => r.json())
-        .then(d => ipEl.innerText = "შენი IP: " + d.ip)
-        .catch(()=> ipEl.innerText = "IP ვერ ჩაიტვირთა.");
-    })();
-
-    // Respect prefers-reduced-motion automatically
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // Elements
-    const enableBtn = document.getElementById('enableTroll');
-    const stopBtn = document.getElementById('stopTroll');
-    const miniBtn = document.getElementById('miniPrank');
-    const banner = document.getElementById('banner');
-    const pageRoot = document.getElementById('pageRoot');
-    const confettiCanvas = document.getElementById('confetti');
-
-    // State
-    let active = false;
-    let confettiTimer = null;
-    let invertTimeout = null;
-    let bannerTimeout = null;
-
-    // Helper: show banner with custom text for a short time
-    function showBanner(text = "Gotcha! 😈", duration = 2200) {
-      if (prefersReduced) return;
-      banner.textContent = text;
-      banner.classList.add('show');
-      clearTimeout(bannerTimeout);
-      bannerTimeout = setTimeout(() => banner.classList.remove('show'), duration);
-    }
-
-    // Gentle page flash (CSS class), toggled for X seconds but not rapid
-    function gentleFlash(duration = 4000) {
-      if (prefersReduced) return;
-      pageRoot.classList.add('flashing');
-      setTimeout(()=> pageRoot.classList.remove('flashing'), duration);
-    }
-
-    // brief invert effect (very short)
-    function briefInvert(ms = 350) {
-      if (prefersReduced) return;
-      pageRoot.classList.add('invert-temp');
-      clearTimeout(invertTimeout);
-      invertTimeout = setTimeout(()=> pageRoot.classList.remove('invert-temp'), ms);
-    }
-
-    // lightweight confetti — small count, short life (non-annoying)
-    function spritzConfetti(count = 28, lifetime = 2000) {
-      if (prefersReduced) return;
-      confettiCanvas.classList.remove('hidden');
-      confettiCanvas.width = innerWidth;
-      confettiCanvas.height = innerHeight;
-      const ctx = confettiCanvas.getContext('2d');
-      const particles = [];
-      for (let i=0;i<count;i++){
-        particles.push({
-          x: Math.random()*confettiCanvas.width,
-          y: Math.random()*-50,
-          vx: (Math.random()-0.5)*2,
-          vy: 1 + Math.random()*3,
-          size: 6 + Math.random()*8,
-          rot: Math.random()*360,
-          rotSpeed: (Math.random()-0.5)*6,
-          color: `hsl(${Math.floor(Math.random()*360)} 90% 60%)`
-        });
-      }
-      const start = performance.now();
-      function frame(t){
-        const dt = t - start;
-        ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-        for (const p of particles){
-          p.x += p.vx;
-          p.y += p.vy;
-          p.rot += p.rotSpeed;
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rot * Math.PI/180);
-          ctx.fillStyle = p.color;
-          ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.65);
-          ctx.restore();
-        }
-        // draw until lifetime
-        if (t - start < lifetime) requestAnimationFrame(frame);
-        else { ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height); confettiCanvas.classList.add('hidden'); }
-      }
-      requestAnimationFrame(frame);
-    }
-
-    // A playful sequence (banner + flash + confetti + invert), runs once
-    function runPlayfulSequence() {
-      if (prefersReduced) return;
-      showBanner("Nice! Prepare for a tiny prank 🤪", 1600);
-      setTimeout(()=> gentleFlash(2400), 400);
-      setTimeout(()=> spritzConfetti(30, 1700), 650);
-      setTimeout(()=> briefInvert(320), 1100);
-      // mild cursor wiggle example (CSS class could be added for more)
-    }
-
-    // Start "continuous playful mode": occasional gentle pranks every 9-18s
-    function startContinuousMode() {
-      if (prefersReduced) return;
-      active = true;
-      enableBtn.setAttribute('aria-pressed','true');
-      enableBtn.classList.add('hidden');
-      stopBtn.classList.remove('hidden');
-      miniBtn.classList.remove('hidden');
-
-      // Run an initial sequence
-      runPlayfulSequence();
-
-      // interval with randomness to avoid being too intense
-      confettiTimer = setInterval(()=>{
-        if (!active) return;
-        const r = Math.random();
-        if (r < 0.45) {
-          // small prank
-          showBanner(["Heh..","You clicked it!","Trolled!","Სასიამოვნო?"][Math.floor(Math.random()*4)], 1400);
-          gentleFlash(1600);
-        } else if (r < 0.75) {
-          spritzConfetti(22, 1200);
-          briefInvert(280);
-        } else {
-          // slightly bigger
-          showBanner("Little chaos incoming! 🎉", 1700);
-          gentleFlash(2200);
-          spritzConfetti(36, 1800);
-        }
-      }, 10000 + Math.random()*8000);
-    }
-
-    function stopContinuousMode() {
-      active = false;
-      enableBtn.setAttribute('aria-pressed','false');
-      enableBtn.classList.remove('hidden');
-      stopBtn.classList.add('hidden');
-      miniBtn.classList.add('hidden');
-      clearInterval(confettiTimer);
-      confettiTimer = null;
-      // reset visual classes
-      pageRoot.classList.remove('flashing','invert-temp');
-      banner.classList.remove('show');
-      confettiCanvas.classList.add('hidden');
-    }
-
-    // Button events (consent required)
-    enableBtn.addEventListener('click', ()=>{
-      if (prefersReduced) {
-        alert("Your system prefers reduced motion — playful mode is disabled for accessibility.");
-        return;
-      }
-      startContinuousMode();
-    });
-    stopBtn.addEventListener('click', stopContinuousMode);
-    miniBtn.addEventListener('click', ()=> {
-      // quick one-off prank
-      runPlayfulSequence();
-    });
-
-    // Keyboard escape to stop
-    window.addEventListener('keydown', (e)=>{
-      if (e.key === 'Escape') stopContinuousMode();
-    });
-
-    // If user navigates away, stop timers
-    window.addEventListener('beforeunload', ()=> { stopContinuousMode(); });
-
-    // Small courtesy tooltip for first-timers (non-blocking)
-    setTimeout(()=> {
-      if (!prefersReduced && !active && !sessionStorage.getItem('trolledTipSeen')) {
-        sessionStorage.setItem('trolledTipSeen','1');
-        showBanner("Tip: click 'Enable playful mode' to enable fun — or press Esc to stop", 4000);
-      }
-    }, 1200);
-
-    // Extra: very small, harmless cursor wiggle (non-intrusive)
-    // Adds a tiny floating effect to the page on mousemove if active
-    let lastMove = 0;
-    window.addEventListener('mousemove', (e) => {
-      if (!active) return;
-      const now = performance.now();
-      if (now - lastMove < 60) return;
-      lastMove = now;
-      const dx = (Math.random()-0.5)*10;
-      const dy = (Math.random()-0.5)*6;
-      pageRoot.style.transform = `translate(${dx}px, ${dy}px)`;
-      setTimeout(()=> pageRoot.style.transform = '', 220);
-    });
-  </script>
+    <script>
+        // Use a free IP API
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ip').innerText = "შენი IP: " + data.ip;
+            })
+            .catch(() => {
+                document.getElementById('ip').innerText = "IP ვერ ჩაიტვირთა.";
+            });
+    </script>
 </body>
 </html>
+
