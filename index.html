@@ -16,22 +16,30 @@
             overflow: hidden;
         }
 
-        /* Background goes on a pseudo-element */
+        /* Background image */
         body::before {
             content: "";
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background-image: url('car.png'); /* replace with your image */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: -2;
-            animation: drift 60s linear infinite;
+            background: url('car.png') center/cover no-repeat;
+            z-index: -3;
             transition: background-position 0.2s ease-out;
         }
 
-        /* Overlay stays on top of background */
+        /* Animated color drift overlay */
+        body::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(120deg, rgba(255,0,150,0.2), rgba(0,200,255,0.2));
+            mix-blend-mode: overlay;
+            animation: drift 20s linear infinite alternate;
+            z-index: -2;
+        }
+
+        /* Dark overlay */
         .overlay {
             position: absolute;
             top: 0; left: 0;
@@ -40,16 +48,15 @@
             z-index: -1;
         }
 
-        /* Gentle hue rotation animation */
         @keyframes drift {
-            0%   { filter: hue-rotate(0deg); }
-            50%  { filter: hue-rotate(30deg); }
-            100% { filter: hue-rotate(0deg); }
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* Respect reduced motion */
         @media (prefers-reduced-motion: reduce) {
-            body::before {
+            body::after {
                 animation: none !important;
             }
         }
@@ -86,12 +93,12 @@
                 document.getElementById('ip').innerText = "IP ვერ ჩაიტვირთა.";
             });
 
-        // Parallax background movement
+        // Parallax effect (moves background image only)
         document.addEventListener("mousemove", (e) => {
             const x = (e.clientX / window.innerWidth - 0.5) * 20; 
             const y = (e.clientY / window.innerHeight - 0.5) * 20;
-            document.body.style.setProperty('--bg-pos', `${50 + x}% ${50 + y}%`);
-            document.body.querySelector("body::before");
+            document.body.style.setProperty("--parallax", `${50 + x}% ${50 + y}%`);
+            document.querySelector("body::before");
         });
     </script>
 </body>
