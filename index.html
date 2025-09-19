@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ka">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,30 +32,15 @@
         100% { text-shadow: 0 0 20px #ff66cc, 0 0 40px #ff66cc, 0 0 60px #ff66cc; }
     }
 
-    .cake-img {
-        width: 250px;
-        margin: 20px;
-        border-radius: 20px;
-        box-shadow: 0 0 20px rgba(255,0,102,0.5);
-        transition: transform 0.3s;
-    }
-
-    .cake-img:hover {
-        transform: scale(1.2);
-    }
-
     .emoji {
         font-size: 2em;
         margin-bottom: 20px;
     }
 
-    /* Balloon animation */
     .balloon {
         position: absolute;
         bottom: -150px;
-        width: 60px;
-        height: 80px;
-        border-radius: 50% 50% 50% 50%;
+        border-radius: 50%;
         opacity: 0.8;
         animation: floatUp linear infinite;
     }
@@ -65,7 +50,6 @@
         100% { transform: translateY(-110vh) rotate(360deg); }
     }
 
-    /* Confetti */
     .confetti {
         position: absolute;
         width: 10px;
@@ -80,42 +64,69 @@
         100% { transform: translateY(100vh) rotate(360deg); }
     }
 
+    .star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: white;
+        border-radius: 50%;
+        opacity: 0.8;
+        animation: twinkle linear infinite;
+    }
+
+    @keyframes twinkle {
+        0%, 100% { opacity: 0.8; }
+        50% { opacity: 0.1; }
+    }
 </style>
 </head>
 <body>
 
-<h1>🎉 Happy Birthday! 🎂</h1>
-<div class="emoji">🥳🎈🎁🍰</div>
+<h1>🎉 გილოცავ დაბადების დღეს! 🥳</h1>
+<div class="emoji">🎈🎁✨🎊</div>
 
-<div>
-    <img class="cake-img" src="https://cdn.pixabay.com/photo/2017/01/20/00/30/birthday-1991330_1280.png" alt="Cake 1">
-    <img class="cake-img" src="https://cdn.pixabay.com/photo/2016/11/21/16/00/birthday-1846213_1280.png" alt="Cake 2">
-</div>
+<!-- Background Music -->
+<audio autoplay loop>
+  <source src="https://www.bensound.com/bensound-music/bensound-birthday.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
 
-<!-- Balloons -->
 <script>
 const colors = ['#ff3366','#ffcc33','#66ccff','#ff66cc','#33ff99'];
-for(let i=0;i<10;i++){
+
+// Balloons
+for(let i=0;i<15;i++){
     let balloon = document.createElement('div');
     balloon.className = 'balloon';
     balloon.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
     balloon.style.left = Math.random()*100 + 'vw';
-    balloon.style.animationDuration = (5 + Math.random()*5) + 's';
     balloon.style.width = (40 + Math.random()*40) + 'px';
     balloon.style.height = (60 + Math.random()*60) + 'px';
+    balloon.style.animationDuration = (5 + Math.random()*5) + 's';
     document.body.appendChild(balloon);
 }
 
 // Confetti
-for(let i=0;i<100;i++){
+for(let i=0;i<120;i++){
     let confetti = document.createElement('div');
     confetti.className = 'confetti';
     confetti.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
     confetti.style.left = Math.random()*100 + 'vw';
-    confetti.style.animationDuration = (2 + Math.random()*3) + 's';
     confetti.style.width = (5 + Math.random()*10) + 'px';
     confetti.style.height = (5 + Math.random()*10) + 'px';
+    confetti.style.animationDuration = (2 + Math.random()*3) + 's';
     document.body.appendChild(confetti);
+}
+
+// Stars
+for(let i=0;i<80;i++){
+    let star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random()*100 + 'vw';
+    star.style.top = Math.random()*100 + 'vh';
+    star.style.width = star.style.height = (1 + Math.random()*2) + 'px';
+    star.style.animationDuration = (1 + Math.random()*3) + 's';
+    document.body.appendChild(star);
 }
 </script>
 
